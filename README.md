@@ -23,7 +23,7 @@ The starter failing is expected. Check your own work before reading the referenc
 The managed block is generated from learner tests. Untouched starters are not started; references never count. On main, all four compiler/instrumentation lanes must pass to check an item. A regression unticks it. See [setup and limitations](docs/GITHUB-SETUP.md).
 
 <!-- PROGRESS:START -->
-**Verified implementations: 0/20** · Evidence lanes: 0 · Commit: `not-run`
+**Verified implementations: 0/20** · Evidence lanes: 4 · Commit: `b898cd46ad4287fb4c0ff493dc0f0d3721267a63`
 
 - [ ] [01 · Byte Lab](projects/01-byte-lab/README.md) — not started
 - [ ] [02 · Hex Detective](projects/02-hexview/README.md) — not started
