@@ -1,0 +1,23 @@
+name: Reproducible course defect
+description: Report a broken contract, reference, test, or dashboard behavior.
+title: "[bug] "
+body:
+  - type: input
+    id: project
+    attributes:
+      label: Project or component
+      placeholder: 03-utf8 / CI / dashboard
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction and expected result
+      description: Include command, input, actual output and expected output.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, compiler version, flags, and commit SHA.

@@ -1,0 +1,438 @@
+{
+  "version": 1,
+  "title": "C / SYSTEMS FORGE",
+  "owner": "AASoftIR",
+  "repo": "c-projects",
+  "projects": [
+    {
+      "id": "01-byte-lab",
+      "n": 1,
+      "title": "Byte Lab",
+      "phase": "01 / inspect bytes",
+      "hours": 3,
+      "skills": [
+        "Representation",
+        "integer widths",
+        "parsing",
+        "bit operations"
+      ],
+      "contract": "byte-lab 0..4294967295 → dec=N hex=XXXXXXXX bits=32-bit-string ones=N",
+      "steps": "Parse with strtoull; reject signs, whitespace, suffixes and range errors. Convert using shifts on uint32_t. Count bits without shifting a signed value.",
+      "insight": "An integer value is abstract; its in-memory byte order is a separate concern. Use PRI macros rather than assuming unsigned long is 32 bits.",
+      "solution": "An end pointer distinguishes valid zero from conversion failure; fixed-width unsigned arithmetic makes every shift well-defined.",
+      "stretch": "Add binary input, byte-order inspection through unsigned char, and rotate-left with a zero-shift guard.",
+      "prerequisites": [],
+      "status": "not_started"
+    },
+    {
+      "id": "02-hexview",
+      "n": 2,
+      "title": "Hex Detective",
+      "phase": "01 / inspect bytes",
+      "hours": 4,
+      "skills": [
+        "Binary I/O",
+        "EOF",
+        "character classes",
+        "offsets"
+      ],
+      "contract": "hexview < binary-file → offset: hex bytes, 16 bytes per row",
+      "steps": "Read fread blocks of 16; emit offsets as eight hex digits and bytes as two. Never store EOF in char. Distinguish ferror from EOF.",
+      "insight": "Text functions lose embedded NUL. Bytes are unsigned; the file may contain any of 256 values.",
+      "solution": "A fixed stack buffer bounds memory; a partial final block is printed exactly once.",
+      "stretch": "Add an ASCII sidebar and reverse mode; compare against xxd, then benchmark 1 MiB blocks.",
+      "prerequisites": [
+        "01-byte-lab"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "03-utf8",
+      "n": 3,
+      "title": "Persian UTF-8 Scanner",
+      "phase": "01 / inspect bytes",
+      "hours": 5,
+      "skills": [
+        "Encoding",
+        "byte vs code point",
+        "validation"
+      ],
+      "contract": "utf8 < text → bytes=N codepoints=N; malformed UTF-8 exits 2",
+      "steps": "Classify lead bytes; accumulate continuation bytes; reject overlong sequences, surrogates, values above U+10FFFF and truncated sequences.",
+      "insight": "strlen counts bytes, not Persian letters. A code point is also not necessarily one visible grapheme.",
+      "solution": "The decoder enforces shortest encodings and scalar-value validity; it does not normalize, shape, or count graphemes.",
+      "stretch": "Print each scalar as U+XXXX; later explore combining marks and why grapheme segmentation needs Unicode data.",
+      "prerequisites": [
+        "02-hexview"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "04-vector",
+      "n": 4,
+      "title": "Vector Workshop",
+      "phase": "02 / own memory",
+      "hours": 6,
+      "skills": [
+        "Heap ownership",
+        "realloc",
+        "capacity",
+        "qsort"
+      ],
+      "contract": "vector INT... → sorted integer line; at least one integer",
+      "steps": "Design a vector with data/len/cap. Grow geometrically with overflow checks. Store realloc in a temporary. Sort with a comparator that cannot overflow.",
+      "insight": "A successful realloc may invalidate every pointer into the old allocation; len and cap have different meanings.",
+      "solution": "The reference doubles capacity, keeps a single owning pointer, and compares with relational operators instead of subtraction.",
+      "stretch": "Expose push/pop/reserve in a header and add allocator injection to exercise allocation failure.",
+      "prerequisites": [
+        "03-utf8"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "05-wordmap",
+      "n": 5,
+      "title": "Word Frequency Map",
+      "phase": "02 / own memory",
+      "hours": 8,
+      "skills": [
+        "Hashing",
+        "separate chaining",
+        "collision handling"
+      ],
+      "contract": "wordmap < text → lexically sorted lowercase ASCII word=count lines",
+      "steps": "Tokenize ASCII letters only. Hash each word into buckets. Compare full keys on collision. Copy owned keys, collect entries, sort and free every allocation.",
+      "insight": "A matching hash is not a matching key. Explicitly choose ASCII semantics rather than pretending to support Persian words.",
+      "solution": "Chained buckets trade simplicity for extra allocations; iteration is sorted separately because hash order is unstable.",
+      "stretch": "Implement resizing and a collision-heavy test; extend tokenization using project 03 without confusing byte and character boundaries.",
+      "prerequisites": [
+        "04-vector"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "06-csv",
+      "n": 6,
+      "title": "CSV State Machine",
+      "phase": "03 / parse and allocate",
+      "hours": 8,
+      "skills": [
+        "Finite-state machines",
+        "escaped quotes",
+        "input contracts"
+      ],
+      "contract": "csv < input → rows=N fields=N max_fields=N; invalid input exits 2",
+      "steps": "Track field start, unquoted, quoted and after-quote states. Handle escaped double quotes and embedded newlines. Accept LF record endings, not CRLF. Count empty fields.",
+      "insight": "A comma is data inside quotes. Splitting with strtok cannot parse CSV and loses empty fields.",
+      "solution": "Four states make every legal transition visible; EOF is a transition too, especially inside an unfinished quote.",
+      "stretch": "Add CRLF support and emit structured records; document whether a blank line is an empty record.",
+      "prerequisites": [
+        "05-wordmap"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "07-grep",
+      "n": 7,
+      "title": "Tiny Grep",
+      "phase": "03 / parse and allocate",
+      "hours": 6,
+      "skills": [
+        "Streaming lines",
+        "substring search",
+        "CLI conventions"
+      ],
+      "contract": "grep PATTERN [-i] < text → 1-based-number:line; 0 matches exits 1",
+      "steps": "Read getline lines. Search a literal pattern without changing displayed text. Implement ASCII case-insensitivity with unsigned byte comparisons. Return 0/1/2 for match/no-match/error.",
+      "insight": "User-facing exit status is an API; scripts depend on the difference between empty results and an error.",
+      "solution": "A simple bounded comparison avoids temporary lowercase copies and preserves original output. This is deliberately literal matching, not regex.",
+      "stretch": "Add -n, -v and multiple files; implement a separate KMP matcher and measure worst-case input.",
+      "prerequisites": [
+        "06-csv"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "08-arena",
+      "n": 8,
+      "title": "Arena Allocator",
+      "phase": "03 / parse and allocate",
+      "hours": 8,
+      "skills": [
+        "Alignment",
+        "lifetime regions",
+        "allocation bounds"
+      ],
+      "contract": "arena SIZE|reset ... → aligned offset or reset; capacity 4096 bytes",
+      "steps": "Use max_align_t alignment. Round offsets with checked arithmetic; reject zero/oversized requests. Reset invalidates all previous allocations.",
+      "insight": "Arena memory is freed as a group. It is suitable when object lifetimes end together, not as a general malloc replacement.",
+      "solution": "A union supplies alignment and storage; offsets are checked before addition, and reset only rewinds the cursor.",
+      "stretch": "Add marks/rewind and poisoning in debug builds; use an arena for parsing expression nodes.",
+      "prerequisites": [
+        "07-grep"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "09-ledger",
+      "n": 9,
+      "title": "Bookish Reading Ledger",
+      "phase": "04 / persist and interpret",
+      "hours": 8,
+      "skills": [
+        "Files",
+        "append formats",
+        "validation",
+        "durability"
+      ],
+      "contract": "ledger FILE add TEXT | list → added or numbered entries",
+      "steps": "Treat one UTF-8 string as one record. Reject newline/CR and cap entry length at 4096 bytes. Append, fflush then fsync; list with getline.",
+      "insight": "A successful printf is not a durability guarantee. Even fsync alone does not create transaction semantics for concurrent writers.",
+      "solution": "A line format is inspectable and easy to recover manually; this single-writer exercise intentionally has no updates or database locking.",
+      "stretch": "Add timestamps and atomic export; inject a write error with /dev/full and design a multi-writer lock.",
+      "prerequisites": [
+        "08-arena"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "10-calc",
+      "n": 10,
+      "title": "Expression Interpreter",
+      "phase": "04 / persist and interpret",
+      "hours": 10,
+      "skills": [
+        "Recursive descent",
+        "precedence",
+        "errors",
+        "floating point"
+      ],
+      "contract": "calc \"EXPR\" → numeric result; invalid/non-finite/division-by-zero exits 2",
+      "steps": "Parse expression → term → unary → primary. Honor parentheses and whitespace. Check finite results and cap recursion at 128. Consume all input.",
+      "insight": "Operator precedence is grammar structure, not a pile of ad-hoc string splits. Floating point is not exact decimal money arithmetic.",
+      "solution": "Returning a value plus parser error state keeps control flow simple; a depth limit makes nested hostile input bounded.",
+      "stretch": "Add variables and ASTs; compare a tree interpreter against project 17 bytecode.",
+      "prerequisites": [
+        "09-ledger"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "11-shell",
+      "n": 11,
+      "title": "Pocket POSIX Shell",
+      "phase": "05 / operate Linux",
+      "hours": 16,
+      "skills": [
+        "fork",
+        "execvp",
+        "pipes",
+        "file descriptors",
+        "waitpid"
+      ],
+      "contract": "shell -c \"COMMAND [| COMMAND...]\" → child output and last-command status",
+      "steps": "Parse whitespace-separated argv and |. Create pipes, fork all children before waiting, close unused ends in both processes and collect every child. No quotes, redirection, globbing or job control.",
+      "insight": "If the parent keeps a write end open, the reader never sees EOF. Waiting before starting a pipeline consumer can deadlock.",
+      "solution": "Each process inherits descriptors; ownership is made explicit. The last child determines pipeline status while every child is reaped.",
+      "stretch": "Add quoting with a tokenizer, then redirection, process groups, signals and job control as separate milestones.",
+      "prerequisites": [
+        "10-calc"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "12-http-parse",
+      "n": 12,
+      "title": "HTTP Request Inspector",
+      "phase": "05 / operate Linux",
+      "hours": 10,
+      "skills": [
+        "Protocol framing",
+        "bounded parsers",
+        "hostile input"
+      ],
+      "contract": "http-parse < CRLF request → method=GET target=/... version=HTTP/1.1 headers=N",
+      "steps": "Read at most 8192 bytes. Require a single complete header block, exact HTTP/1.1 request line, token header names and visible header values. Require exactly one nonempty Host. Reject bodies, Transfer-Encoding and nonzero Content-Length.",
+      "insight": "HTTP is framed bytes, not arbitrary lines. Ambiguous framing invites request-smuggling bugs.",
+      "solution": "The contract only accepts GET requests without bodies, and rejects duplicates of framing headers instead of guessing.",
+      "stretch": "Add body framing in a separate parser with an explicit byte limit; use a fuzzer on every parser state.",
+      "prerequisites": [
+        "11-shell"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "13-http-server",
+      "n": 13,
+      "title": "Loopback Health Server",
+      "phase": "05 / operate Linux",
+      "hours": 14,
+      "skills": [
+        "TCP",
+        "short reads/writes",
+        "timeouts",
+        "cleanup"
+      ],
+      "contract": "http-server PORT → READY=PORT; GET /health returns 200 JSON, unknown path 404",
+      "steps": "Bind 127.0.0.1; allow port 0 for tests. Read until CRLFCRLF with an 8192-byte limit and timeout. Parse with the same strict HTTP subset as project 12. Send complete responses with Content-Length; handle SIGPIPE.",
+      "insight": "TCP preserves a byte stream, not your send boundaries. One recv is not one request.",
+      "solution": "One connection at a time keeps descriptor ownership clear; timeouts bound slow clients. This teaching server is not an Internet-facing production server.",
+      "stretch": "Use poll with many sockets; measure slow-client behavior before implementing keep-alive.",
+      "prerequisites": [
+        "12-http-parse"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "14-kvlog",
+      "n": 14,
+      "title": "Append-Only KV Store",
+      "phase": "05 / operate Linux",
+      "hours": 16,
+      "skills": [
+        "Replay logs",
+        "recovery",
+        "durable writes",
+        "storage design"
+      ],
+      "contract": "kvlog FILE put KEY VALUE | get KEY | del KEY; absent get exits 1",
+      "steps": "Use printable ASCII keys/values without tabs/newlines, max 255/1023 bytes. Append put/del records and fsync. Replay records in order; ignore a trailing torn record and truncate it before the next append.",
+      "insight": "A log is a history; a map is its current interpretation. Recovery rules are part of the file format.",
+      "solution": "A deliberately small tab-delimited format demonstrates replay and tail repair. It has no checksum, concurrent writer safety or crash-atomic transaction guarantee.",
+      "stretch": "Add record length and checksum, atomic compaction with directory fsync, indexing and file locks; study SQLite rather than calling this a SQLite clone.",
+      "prerequisites": [
+        "13-http-server"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "15-lru",
+      "n": 15,
+      "title": "LRU Cache Simulator",
+      "phase": "05 / operate Linux",
+      "hours": 10,
+      "skills": [
+        "Linked lists",
+        "eviction",
+        "invariants",
+        "complexity"
+      ],
+      "contract": "lru CAPACITY KEY... → hit=N miss=N cache=most-recent,...",
+      "steps": "Move a hit to the front; allocate a miss; evict the tail above capacity. Maintain head/tail and prev/next links. Cap capacity at 10000.",
+      "insight": "A cache is an explicit policy plus lookup; a linked list alone makes lookup O(capacity).",
+      "solution": "The reference favors a transparent list over an optimized hash/list combination, so you can inspect every invariant.",
+      "stretch": "Reuse project 05 for O(1)-average lookup; test capacity 1, repeated eviction and failed allocation.",
+      "prerequisites": [
+        "14-kvlog"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "16-workers",
+      "n": 16,
+      "title": "Parallel Checksum Lab",
+      "phase": "05 / operate Linux",
+      "hours": 14,
+      "skills": [
+        "pthread",
+        "race-free partitioning",
+        "deterministic reduction"
+      ],
+      "contract": "workers THREADS COUNT → sum=N for 1..COUNT; threads 1..64, count <= 10000000",
+      "steps": "Split the integer range into disjoint intervals. Give each thread private job/result storage. Join all started workers before reading and reducing results.",
+      "insight": "A thread result needs a lifetime that outlasts the thread. Shared mutable counters require synchronization.",
+      "solution": "Partitioned ownership removes the need for locks; joining establishes the handoff. This is a parallel reduction, not a general thread pool.",
+      "stretch": "Turn it into a bounded producer/consumer queue with condition variables; test cancellation, shutdown and ThreadSanitizer separately.",
+      "prerequisites": [
+        "15-lru"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "17-vm",
+      "n": 17,
+      "title": "Stack Bytecode VM",
+      "phase": "06 / integrate systems",
+      "hours": 16,
+      "skills": [
+        "Instruction decoding",
+        "stack safety",
+        "interpreter design"
+      ],
+      "contract": "vm < instructions: PUSH N, ADD, SUB, MUL, DIV, PRINT → printed values",
+      "steps": "Parse one strict instruction per line. Use an int64_t stack of 1024 slots. Check overflow, underflow, zero division and INT64_MIN/-1. Reject unknown opcodes and operands.",
+      "insight": "A VM must treat bytecode as untrusted input even if its own compiler produced it. Integer overflow in C is undefined behavior.",
+      "solution": "A small instruction set isolates dispatch and stack semantics; overflow helpers turn undefined arithmetic into predictable errors.",
+      "stretch": "Compile project 10 ASTs to this VM; add jumps, instruction budgets and a verifier before adding loops.",
+      "prerequisites": [
+        "16-workers"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "18-search",
+      "n": 18,
+      "title": "Local Document Index",
+      "phase": "06 / integrate systems",
+      "hours": 16,
+      "skills": [
+        "Inverted indexes",
+        "normalization",
+        "query semantics"
+      ],
+      "contract": "search CORPUS WORD → matching 1-based document IDs; 0 hits exits 1",
+      "steps": "One LF-delimited line is one document. Tokenize lowercase ASCII words; map each token to a deduplicated posting list. Search exactly one ASCII word and emit sorted IDs.",
+      "insight": "A scan and an index can return the same answer with different costs. A word repeated in a document must not duplicate the document ID.",
+      "solution": "The reference builds an in-memory inverted index with owned word and posting storage; persistence and ranking remain explicit extensions.",
+      "stretch": "Add AND/OR intersections and BM25; integrate project 03 for Persian-aware tokenization and measure retrieval quality.",
+      "prerequisites": [
+        "17-vm"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "19-ffi",
+      "n": 19,
+      "title": "Python ↔ C Bridge",
+      "phase": "06 / integrate systems",
+      "hours": 10,
+      "skills": [
+        "Shared libraries",
+        "ABI",
+        "ctypes",
+        "ownership boundaries"
+      ],
+      "contract": "libcourse.so exports int course_utf8_count(const unsigned char*,size_t,size_t*)",
+      "steps": "Export one stable function. Validate pointer/length combinations; report scalar count via an out parameter. Compile -fPIC -shared, declare ctypes argtypes/restype and test embedded NUL.",
+      "insight": "Python memory ownership does not transfer to C just because a pointer crosses the ABI. C must not keep borrowed buffers.",
+      "solution": "Caller-owned byte buffers and an out parameter avoid ambiguous allocation ownership. size_t must map to ctypes.c_size_t.",
+      "stretch": "Expose search as a handle API with create/query/destroy; package bindings with ABI version checks.",
+      "prerequisites": [
+        "18-search"
+      ],
+      "status": "not_started"
+    },
+    {
+      "id": "20-doc-api",
+      "n": 20,
+      "title": "Document Search API",
+      "phase": "06 / integrate systems",
+      "hours": 24,
+      "skills": [
+        "Service integration",
+        "URL decoding",
+        "API errors",
+        "operational limits"
+      ],
+      "contract": "doc-api PORT CORPUS → READY=PORT; GET /health or /search?q=ASCIIword returns JSON",
+      "steps": "Load a corpus, build an inverted index, serve loopback HTTP with the strict framing from projects 12/13, decode %XX and +, validate one word and return IDs. Define 400/404 and missing-corpus behavior.",
+      "insight": "A capstone proves interfaces compose. Correct HTTP, ownership and search semantics matter more than adding a frontend.",
+      "solution": "The reference combines the index and HTTP modules without duplicating protocol parsing. It is sequential, in-memory and ASCII-search only.",
+      "stretch": "Add Persian tokenization, persistent snapshots, LRU results, a bounded worker queue and a Python client; create benchmarks before claiming performance.",
+      "prerequisites": [
+        "19-ffi"
+      ],
+      "status": "not_started"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+name: Course source bundle
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - run: git archive --format=zip --prefix=c-projects/ -o c-projects-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: c-projects-source
+          path: c-projects-source.zip

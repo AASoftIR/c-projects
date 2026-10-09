@@ -1,0 +1,4 @@
+C makes memory ownership explicit.
+Linux pipes connect small tools.
+Memory and parsers power the document search API.
+یادداشت فارسی برای تمرین اعتبارسنجی UTF-8؛ جست‌وجوی فارسی در مسیر پیشرفته اضافه می‌شود.
