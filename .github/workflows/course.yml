@@ -15,7 +15,7 @@ jobs:
     name: Course infrastructure
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - run: python3 -m unittest discover -s tests -p 'test_infrastructure.py' -v
@@ -29,7 +29,7 @@ jobs:
       matrix:
         cc: [gcc, clang]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Verify all normal and sanitized reference solutions
@@ -55,7 +55,7 @@ jobs:
       matrix:
         cc: [gcc, clang]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Collect normal learner evidence
@@ -93,7 +93,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
