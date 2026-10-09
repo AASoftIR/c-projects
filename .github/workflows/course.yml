@@ -117,7 +117,7 @@ jobs:
             git commit -m 'Update verified C course progress [skip ci]'
             git push origin HEAD:main
           fi
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
   deploy:
