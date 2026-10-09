@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "mode": "reference",
+  "compiler": "gcc",
+  "sanitized": true,
+  "generated_at": "2026-10-09T22:36:58.043791+00:00",
+  "commit": "local",
+  "results": [
+    {
+      "id": "01-byte-lab",
+      "status": "passed",
+      "checks": 90,
+      "seconds": 0.203,
+      "sanitized": true
+    },
+    {
+      "id": "02-hexview",
+      "status": "passed",
+      "checks": 12,
+      "seconds": 0.086,
+      "sanitized": true
+    },
+    {
+      "id": "03-utf8",
+      "status": "passed",
+      "checks": 29,
+      "seconds": 0.127,
+      "sanitized": true
+    },
+    {
+      "id": "04-vector",
+      "status": "passed",
+      "checks": 18,
+      "seconds": 0.12,
+      "sanitized": true
+    },
+    {
+      "id": "05-wordmap",
+      "status": "passed",
+      "checks": 15,
+      "seconds": 0.136,
+      "sanitized": true
+    },
+    {
+      "id": "06-csv",
+      "status": "passed",
+      "checks": 29,
+      "seconds": 0.11,
+      "sanitized": true
+    },
+    {
+      "id": "07-grep",
+      "status": "passed",
+      "checks": 14,
+      "seconds": 0.106,
+      "sanitized": true
+    },
+    {
+      "id": "08-arena",
+      "status": "passed",
+      "checks": 16,
+      "seconds": 0.109,
+      "sanitized": true
+    },
+    {
+      "id": "09-ledger",
+      "status": "passed",
+      "checks": 17,
+      "seconds": 0.105,
+      "sanitized": true
+    },
+    {
+      "id": "10-calc",
+      "status": "passed",
+      "checks": 31,
+      "seconds": 0.151,
+      "sanitized": true
+    },
+    {
+      "id": "11-shell",
+      "status": "passed",
+      "checks": 24,
+      "seconds": 0.167,
+      "sanitized": true
+    },
+    {
+      "id": "12-http-parse",
+      "status": "passed",
+      "checks": 24,
+      "seconds": 0.146,
+      "sanitized": true
+    },
+    {
+      "id": "13-http-server",
+      "status": "passed",
+      "checks": 30,
+      "seconds": 0.189,
+      "sanitized": true
+    },
+    {
+      "id": "14-kvlog",
+      "status": "passed",
+      "checks": 32,
+      "seconds": 0.173,
+      "sanitized": true
+    },
+    {
+      "id": "15-lru",
+      "status": "passed",
+      "checks": 13,
+      "seconds": 0.129,
+      "sanitized": true
+    },
+    {
+      "id": "16-workers",
+      "status": "passed",
+      "checks": 23,
+      "seconds": 0.152,
+      "sanitized": true
+    },
+    {
+      "id": "17-vm",
+      "status": "passed",
+      "checks": 86,
+      "seconds": 0.201,
+      "sanitized": true
+    },
+    {
+      "id": "18-search",
+      "status": "passed",
+      "checks": 22,
+      "seconds": 0.187,
+      "sanitized": true
+    },
+    {
+      "id": "19-ffi",
+      "status": "passed",
+      "checks": 3,
+      "seconds": 0.09,
+      "sanitized": true
+    },
+    {
+      "id": "20-doc-api",
+      "status": "passed",
+      "checks": 54,
+      "seconds": 0.34,
+      "sanitized": true
+    }
+  ],
+  "leak_detection": "disabled locally"
+}

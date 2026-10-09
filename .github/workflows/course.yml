@@ -1,0 +1,138 @@
+name: Course CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: course-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  infrastructure:
+    name: Course infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests -p 'test_infrastructure.py' -v
+      - run: node --check site/app.js
+  reference:
+    name: Reference / ${{ matrix.cc }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Verify all normal and sanitized reference solutions
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1
+        run: |
+          python3 scripts/course.py test all --mode reference --cc "${{ matrix.cc }}"
+          python3 scripts/course.py test all --mode reference --cc "${{ matrix.cc }}" --sanitize
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reference-${{ matrix.cc }}
+          path: |
+            build/logs/reference/
+            build/reference-*.json
+  learner:
+    name: Learner / ${{ matrix.cc }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Collect normal learner evidence
+        id: normal
+        continue-on-error: true
+        run: python3 scripts/course.py report --cc "${{ matrix.cc }}" --output "reports/${{ matrix.cc }}-normal.json"
+      - name: Collect sanitizer learner evidence
+        id: sanitized
+        continue-on-error: true
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1
+        run: python3 scripts/course.py report --cc "${{ matrix.cc }}" --sanitize --output "reports/${{ matrix.cc }}-sanitized.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: learner-${{ matrix.cc }}
+          path: reports/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs-${{ matrix.cc }}
+          path: build/logs/learner/
+          if-no-files-found: ignore
+      - name: Fail the check if an attempted project failed
+        if: steps.normal.outcome == 'failure' || steps.sanitized.outcome == 'failure'
+        run: exit 1
+  publish:
+    name: Publish verified progress
+    needs: [infrastructure, reference, learner]
+    if: always() && !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.reference.result == 'success' && needs.infrastructure.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: learner-*
+          path: reports
+          merge-multiple: true
+      - name: Refuse stale evidence
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+      - name: Generate checklist and Pages data
+        run: python3 scripts/publish.py --require-matrix --reports reports/gcc-normal.json reports/gcc-sanitized.json reports/clang-normal.json reports/clang-sanitized.json
+      - name: Save generated checklist
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md progress.json site/data/course.json course-preview.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update verified C course progress [skip ci]'
+            git push origin HEAD:main
+          fi
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+  deploy:
+    name: Deploy course dashboard
+    needs: publish
+    if: always() && needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b100e">
+  <meta name="description" content="C Systems Forge: 20 project-driven C missions, from bytes and memory to Linux services and a document search engine.">
+  <title>C / Systems Forge — Alireza's project lab</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+  <a class="brand" href="#/">C<span>/</span><small>SYSTEMS<br>FORGE</small></a>
+  <div class="rail-label">YOUR ENGINEERING LAB</div>
+  <nav aria-label="Main navigation">
+    <a href="#/" data-nav="missions"><span>▦</span> Mission board <kbd>01</kbd></a>
+    <a href="#/handbook" data-nav="handbook"><span>≡</span> Field manual <kbd>02</kbd></a>
+    <a href="#/terminal" data-nav="terminal"><span>›_</span> Lab terminal <kbd>03</kbd></a>
+  </nav>
+  <div class="rail-label route-label">LEARNING ROUTE</div>
+  <div id="stage-nav" class="stage-nav"></div>
+  <div class="rail-foot"><span class="dot"></span> NATIVE LINUX / C17<br><small>Built for Alireza.<br>Learn it. Break it. Explain it.</small><a id="repo-link" href="https://github.com/AASoftIR/c-projects" target="_blank" rel="noreferrer">Source repository ↗</a></div>
+</aside>
+<div class="workspace">
+  <header class="topbar">
+    <div class="breadcrumb">~/c-projects <span>/</span> <strong id="crumb">mission-board</strong></div>
+    <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#/">Missions</a><a href="#/handbook">Manual</a><a href="#/terminal">Terminal</a></nav>
+    <button class="palette-trigger" id="open-palette">Find a mission <kbd>Ctrl K</kbd></button>
+  </header>
+  <main id="main" tabindex="-1"><div class="loading">Initializing your lab…</div></main>
+  <footer><span>C / SYSTEMS FORGE</span><span>Test evidence ≠ mastery. Your explanations matter.</span><a href="#/handbook/docs/GITHUB-SETUP.md">Publishing guide ↗</a></footer>
+</div>
+<dialog id="palette" aria-label="Find a mission">
+  <div class="palette-head"><span>›</span><input id="palette-input" placeholder="Search mission, skill, or number…" autocomplete="off" aria-label="Search missions"><button id="close-palette" aria-label="Close search">Esc</button></div>
+  <div id="palette-results"></div>
+  <div class="palette-foot">Enter to open first result · Escape to close</div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
